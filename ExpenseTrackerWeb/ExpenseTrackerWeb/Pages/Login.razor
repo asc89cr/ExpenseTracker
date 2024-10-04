@@ -1,0 +1,47 @@
+﻿@page "/login"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject TokenAuthenticationStateProvider AuthStateProvider
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+
+<h3>Login</h3>
+
+<EditForm Model="loginModel" OnValidSubmit="HandleLogin">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label>Email</label>
+        <InputText @bind-Value="loginModel.Email" />
+    </div>
+
+    <div>
+        <label>Password</label>
+        <InputText @bind-Value="loginModel.Password" type="password" />
+    </div>
+
+    <button type="submit">Login</button>
+</EditForm>
+
+@code {
+    private LoginModel loginModel = new LoginModel();
+
+    private async Task HandleLogin()
+    {
+        var response = await Http.PostAsJsonAsync("api/account/login", loginModel);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var token = await response.Content.ReadAsStringAsync();
+            await LocalStorage.SetItemAsync("authToken", token);
+            AuthStateProvider.MarkUserAsAuthenticated(token);
+
+            Navigation.NavigateTo("/");
+        }
+        else
+        {
+            // Handle invalid login
+            Console.WriteLine("Login failed");
+        }
+    }
+}
