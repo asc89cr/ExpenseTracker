@@ -1,4 +1,9 @@
-﻿@page "/"
+﻿@using Microsoft.AspNetCore.Authorization
+
+@attribute [Authorize]
+@page "/"
+
+
 
 <PageTitle>Home</PageTitle>
 

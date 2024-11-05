@@ -12,10 +12,21 @@ namespace ExpenseTrackerAPI
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
             // Add services to the container.
 
             builder.Services.AddControllers();
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy(name: MyAllowSpecificOrigins,
+                                  builder =>
+                                  {
+                                      builder.WithOrigins("https://localhost:7136") // Blazor app origin
+                                             .AllowAnyHeader()
+                                             .AllowAnyMethod();
+                                  });
+            });
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
             options.UseCosmos(
                 builder.Configuration["CosmosDb:AccountEndpoint"],
@@ -52,6 +63,8 @@ namespace ExpenseTrackerAPI
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
+
+            app.UseCors(MyAllowSpecificOrigins);
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())

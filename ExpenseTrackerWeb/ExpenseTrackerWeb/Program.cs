@@ -21,7 +21,7 @@ namespace ExpenseTrackerWeb
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7122/") });
             builder.Services.AddBlazoredLocalStorage();
 
-            builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+            
 
             await builder.Build().RunAsync();
         }

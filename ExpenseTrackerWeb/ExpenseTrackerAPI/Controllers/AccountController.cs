@@ -25,15 +25,23 @@ namespace ExpenseTrackerAPI.Controllers
         [HttpPost("Register")]
         public async Task<IActionResult> Register([FromBody] RegisterModel model)
         {
-            var user = new IdentityUser { UserName = model.Email, Email = model.Email };
-            var result = await _userManager.CreateAsync(user, model.Password);
-
-            if (!result.Succeeded)
+            try 
             {
-                return BadRequest(result.Errors);
-            }
+                var user = new IdentityUser { UserName = model.Email, Email = model.Email };
+                var result = await _userManager.CreateAsync(user, model.Password);
 
-            return Ok("User registered successfully");
+                if (!result.Succeeded)
+                {
+                    return BadRequest(result.Errors);
+                }
+
+                return Ok("User registered successfully");
+            }
+            catch (Exception ex) 
+            { 
+                return StatusCode(500, ex.Message);
+            }
+            
         }
 
         [HttpPost("Login")]
