@@ -1,48 +1,57 @@
 ﻿@page "/login"
-@using ExpenseTrackerModel.Security
-@inject HttpClient Http
+@using Microsoft.AspNetCore.Components.Authorization
 @inject NavigationManager Navigation
-@inject TokenAuthenticationStateProvider AuthStateProvider
+@inject HttpClient Http
 @inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
-<h3>Login</h3>
+<FluentTextField @bind-Value="Email" Label="Email" Required="true" Placeholder="Enter your email" />
+<FluentTextField @bind-Value="Password" Label="Password" Required="true" Type="password" Placeholder="Enter your password" />
 
-<EditForm Model="loginModel" OnValidSubmit="HandleLogin">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+<FluentButton class="btn-accent" @onclick="HandleLogin">Login</FluentButton>
+<FluentButton class="btn-neutral" @onclick="NavigateToRegister">Register</FluentButton>
 
-    <div>
-        <label>Email</label>
-        <InputText @bind-Value="loginModel.Email" />
-    </div>
-
-    <div>
-        <label>Password</label>
-        <InputText @bind-Value="loginModel.Password" type="password" />
-    </div>
-
-    <button type="submit">Login</button>
-</EditForm>
+<p style="color:red;" hidden="!ShowError">@ErrorMessage</p>
 
 @code {
-    private LoginModel loginModel = new LoginModel();
+    private string Email { get; set; } = string.Empty;
+    private string Password { get; set; } = string.Empty;
+    private string ErrorMessage { get; set; }
+    private bool ShowError { get; set; } = false;
 
     private async Task HandleLogin()
     {
-        var response = await Http.PostAsJsonAsync("api/account/login", loginModel);
-
-        if (response.IsSuccessStatusCode)
+        try
         {
-            var token = await response.Content.ReadAsStringAsync();
-            await LocalStorage.SetItemAsync("authToken", token);
-            AuthStateProvider.MarkUserAsAuthenticated(token);
+            var response = await Http.PostAsJsonAsync("api/account/login", new { Email, Password });
+            if (response.IsSuccessStatusCode)
+            {
+                var token = await response.Content.ReadAsStringAsync();
+                await LocalStorage.SetItemAsync("authToken", token);
 
-            Navigation.NavigateTo("/");
+                // Notify the AuthenticationStateProvider of the updated state
+                if (AuthenticationStateProvider is TokenAuthenticationStateProvider customAuthProvider)
+                {
+                    customAuthProvider.MarkUserAsAuthenticated(token);
+                }
+
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                ShowError = true;
+                ErrorMessage = "Login failed. Please check your credentials.";
+            }
         }
-        else
+        catch (Exception ex)
         {
-            // Handle invalid login
-            Console.WriteLine("Login failed");
+            ShowError = true;
+            ErrorMessage = ex.Message;
         }
+    }
+
+    private void NavigateToRegister()
+    {
+        Navigation.NavigateTo("/register");
     }
 }

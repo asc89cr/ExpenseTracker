@@ -1,4 +1,7 @@
-
+using ExpenseTracker.Core.Interfaces;
+using ExpenseTracker.Core.Models;
+using ExpenseTracker.Infrastructure.Data;
+using ExpenseTracker.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +15,7 @@ namespace ExpenseTrackerAPI
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
             var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
             // Add services to the container.
@@ -50,9 +54,9 @@ namespace ExpenseTrackerAPI
                     ValidateAudience = true,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
-                    ValidAudience = builder.Configuration["Jwt:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+                    ValidIssuer = builder.Configuration["JWTSettings:Issuer"],
+                    ValidAudience = builder.Configuration["JWTSettings:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWTSettings:Key"]))
                 };
             });
 
@@ -61,6 +65,10 @@ namespace ExpenseTrackerAPI
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            builder.Services.Configure<JWTSettings>(builder.Configuration.GetSection("JwtSettings"));
+            builder.Services.AddScoped<IJWTTokenService, JWTTokenService>(); // Register the JwtService
+            builder.Services.AddCustomServices();
 
             var app = builder.Build();
 

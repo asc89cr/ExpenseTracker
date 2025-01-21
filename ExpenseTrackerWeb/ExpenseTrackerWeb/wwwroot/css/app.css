@@ -101,3 +101,23 @@ a, .btn-link {
 code {
     color: #c02d76;
 }
+.btn-accent {
+    background-color: #0078d4; /* Fluent UI accent color */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 4px;
+}
+
+.btn-neutral {
+    background-color: #e1e1e1; /* Fluent UI neutral color */
+    color: #323130;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 4px;
+}
+
